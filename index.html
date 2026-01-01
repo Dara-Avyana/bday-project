@@ -160,8 +160,8 @@
               const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: { 
                   facingMode: facingMode, // 'user' untuk kamera depan
-                  width: { ideal: 720 },  // jangan terlalu besar agar ringan di HP
-                  height: { ideal: 1280 }
+                  width: { min: 640, ideal: 1920 },
+                  height: { min: 480, ideal: 1080 }
                 },
                 audio: false // pastikan audio false agar tidak minta izin mic
               });
