@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Selfie</title>
+    <!-- Load Google Fonts (Playfair Display for elegance) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load React & Babel Standalone -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+        .font-playfair {
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        // ============================================
+        // Ikon Lucide In-line
+        // ============================================
+
+        const IconWrapper = ({ children, className = "", size = 24 }) => (
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={size}
+                height={size}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={className}
+            >
+                {children}
+            </svg>
+        );
+
+        const Camera = (props) => (
+            <IconWrapper {...props}>
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                <circle cx="12" cy="13" r="3" />
+            </IconWrapper>
+        );
+
+        const Download = (props) => (
+            <IconWrapper {...props}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" x2="12" y1="15" y2="3" />
+            </IconWrapper>
+        );
+
+        const Send = (props) => (
+            <IconWrapper {...props}>
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </IconWrapper>
+        );
+
+        const ChevronRight = (props) => (
+            <IconWrapper {...props}>
+                <path d="m9 18 6-6-6-6" />
+            </IconWrapper>
+        );
+
+
+        // ============================================
+        // KONFIGURASI - EDIT BAGIAN INI
+        // ============================================
+        const CONFIG = {
+          friendName: "Saarah", 
+          birthdayMessage: "Uyeay! Welcome to your twenties🎉 Semoga selalu sehat, lancar, dan mudah dalam segalanya. Semoga dijauhkan dari hal buruk dan senantiasa dibersamai kebaikan ya, Sar💕", 
+          whatsappNumber: "6281252453308", 
+        };
+        // ============================================
+
+        const PhotoConfirmationModal = ({ message, onConfirm, onCancel }) => (
+            <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
+                <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full text-center">
+                    <h3 className="text-xl font-semibold mb-4 text-pink-600">
+                        {message}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                        TEKAN OK! Kalau ga bareng hadiah nya batalin ajadeh hmzhmz...
+                    </p>
+                    <div className="flex justify-around gap-4">
+                        <button 
+                            onClick={onCancel}
+                            className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            onClick={onConfirm}
+                            className="flex-1 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition font-medium shadow-md"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+
+
+        function BirthdayApp() {
+          const [page, setPage] = useState(0);
+          const [photo, setPhoto] = useState(null);
+          const [stream, setStream] = useState(null);
+          const [facingMode, setFacingMode] = useState('user');
+          const [showModal, setShowModal] = useState(false); // State untuk modal konfirmasi
+          
+          const videoRef = useRef(null);
+          const captureCanvasRef = useRef(null);
+          const [startX, setStartX] = useState(0);
+
+          const [confetti, setConfetti] = useState([]);
+          const [cameraError, setCameraError] = useState(null); 
+
+          useEffect(() => {
+            // Confetti Setup
+            const pieces = [];
+            for (let i = 0; i < 50; i++) {
+              pieces.push({
+                id: i,
+                left: Math.random() * 100,
+                delay: Math.random() * 3,
+                duration: 3 + Math.random() * 2,
+                rotation: Math.random() * 360,
+                color: ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d96ff', '#ff6bff'][Math.floor(Math.random() * 5)]
+              });
+            }
+            setConfetti(pieces);
+          }, []);
+
+          const startCamera = async () => {
+            setCameraError(null);
+            try {
+              if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+              }
+              const mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    facingMode,
+                    width: { ideal: 1080 },
+                    height: { ideal: 1080 },
+                }
+              });
+              setStream(mediaStream);
+              if (videoRef.current) {
+                videoRef.current.srcObject = mediaStream;
+              }
+            } catch (err) {
+              console.error('Error accessing camera:', err);
+              setCameraError("Akses kamera ditolak atau tidak tersedia. Pastikan izin kamera telah diberikan.");
+            }
+          };
+
+          const stopCamera = () => {
+            if (stream) {
+              stream.getTracks().forEach(track => track.stop());
+              setStream(null);
+            }
+          };
+
+          // Logic untuk langsung mengambil foto tanpa modal
+          const takePhoto = () => {
+            const video = videoRef.current;
+            const canvas = captureCanvasRef.current;
+            
+            if (!video || !canvas) return;
+
+            // Set canvas resolution
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            
+            // Mirror the image capture for the user-facing camera
+            if (facingMode === 'user') {
+                context.save();
+                context.scale(-1, 1);
+                context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+                context.restore();
+            } else {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
+
+            const photoUrl = canvas.toDataURL('image/png');
+            setPhoto(photoUrl);
+            stopCamera();
+          };
+
+          const switchCamera = () => {
+            setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+            setPhoto(null); 
+          };
+
+          // Handler saat modal konfirmasi di halaman 0 diklik OK
+          const handleModalConfirm = () => {
+              setShowModal(false);
+              setPage(1); // Pindah ke halaman kamera
+          };
+
+          // Effect to manage camera stream
+          useEffect(() => {
+            if (page === 1 && !photo) {
+              startCamera();
+            }
+            return () => {
+              if (page !== 1) stopCamera();
+            };
+          }, [page, facingMode, photo]);
+
+          const downloadPhoto = () => {
+            if (!photo) return;
+            const link = document.createElement('a');
+            link.download = `birthday-selfie-${CONFIG.friendName}.png`;
+            link.href = photo;
+            link.click();
+          };
+
+          const openWhatsApp = () => {
+            const message = encodeURIComponent(`Hai ${CONFIG.friendName}! Aku udah ambil foto spesial buat ulang tahunmu 🎉🎂 (Foto bisa didownload dari aplikasi ya!)`);
+            window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${message}`, '_blank');
+          };
+
+          // --- Swiping Logic ---
+          const handleTouchStart = (e) => {
+            if (showModal || photo) return; 
+            setStartX(e.touches[0].clientX);
+          };
+
+          const handleTouchEnd = (e) => {
+            if (showModal || photo) return; 
+            const endX = e.changedTouches[0].clientX;
+            const diff = startX - endX;
+            
+            if (Math.abs(diff) > 50) {
+              if (diff > 0 && page === 0) {
+                // Di sini tidak langsung setPage(1), tapi tunggu konfirmasi modal
+                // Jika ingin tetap bisa swipe ke Page 1, harus memicu modal saat swipe berakhir
+                // Untuk kesederhanaan, hanya izinkan swipe kembali dari Page 1 ke Page 0 jika belum ada foto
+                if (page === 1) setPage(0); 
+              } else if (diff < 0 && page === 1) {
+                setPage(0);
+              }
+            }
+          };
+
+          return (
+            <div className="w-full h-screen bg-black overflow-hidden relative font-sans">
+              {/* Confetti Animation CSS */}
+              <style>{`
+                @keyframes fall {
+                  0% {
+                    transform: translateY(-100vh) rotate(0deg);
+                    opacity: 1;
+                  }
+                  100% {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                  }
+                }
+              `}</style>
+              
+              {/* Confetti Pieces */}
+              {confetti.map(piece => (
+                <div
+                  key={piece.id}
+                  className="absolute w-3 h-3 rounded-sm z-50 pointer-events-none"
+                  style={{
+                    left: `${piece.left}%`,
+                    top: '-20px',
+                    backgroundColor: piece.color,
+                    animation: `fall ${piece.duration}s linear ${piece.delay}s infinite`, 
+                    transform: `rotate(${piece.rotation}deg)`,
+                  }}
+                />
+              ))}
+
+              {/* Page Container */}
+              <div
+                className="flex transition-transform duration-500 w-[200vw] h-full"
+                style={{ transform: `translateX(-${page * 50}%)` }}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
+                
+                {/* Page 1: Welcome */}
+                <div className="w-screen h-full flex-shrink-0 flex flex-col items-center justify-center p-8 relative bg-gray-900">
+                  <div className="text-center z-10">
+                    <h1 className="text-5xl md:text-7xl font-playfair font-extrabold text-pink-400 mb-6 tracking-wide drop-shadow-lg">
+                      Halo, {CONFIG.friendName}!
+                    </h1>
+                    <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed max-w-2xl font-light">
+                      {CONFIG.birthdayMessage}
+                    </p>
+                    <button
+                       onClick={() => setShowModal(true)} // Memicu modal saat klik "Mulai Selfie"
+                       className="mt-4 px-8 py-3 bg-pink-600 text-white rounded-full shadow-lg hover:bg-pink-700 transition transform hover:scale-105 flex items-center justify-center mx-auto gap-2 text-lg"
+                    >
+                        Mulai Selfie <ChevronRight size={20} className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Page 2: Camera & Photo Result */}
+                <div className="w-screen h-full flex-shrink-0 flex flex-col relative bg-gray-900">
+                  <div className="flex-1 relative w-full h-full">
+                    
+                    {/* Camera View */}
+                    {!photo ? (
+                      <>
+                        {cameraError ? (
+                             <div className="flex items-center justify-center h-full text-center p-8 bg-gray-800">
+                                <p className="text-red-400 text-lg font-medium max-w-sm">
+                                    🚨 Gagal mengakses kamera. Silakan pastikan izin kamera di browser Anda sudah diaktifkan.
+                                </p>
+                            </div>
+                        ) : (
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                className="w-full h-full object-cover transform scale-x-[-1]" 
+                            />
+                        )}
+                        
+                        
+                        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 z-20 px-4">
+                            <button
+                                onClick={switchCamera}
+                                className="px-6 py-3 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition shadow-lg"
+                                disabled={cameraError}
+                            >
+                                Ganti Kamera
+                            </button>
+                            <button
+                                onClick={takePhoto} // Langsung ambil foto setelah OK modal
+                                className="w-16 h-16 bg-pink-500 rounded-full border-4 border-white shadow-2xl hover:bg-pink-600 transition flex items-center justify-center transform hover:scale-105"
+                                disabled={cameraError}
+                            >
+                                <Camera size={32} className="w-8 h-8 text-white" />
+                            </button>
+                        </div>
+                      </>
+                    ) : (
+                      // Photo Result View
+                      <>
+                        <img src={photo} alt={`Foto Ulang Tahun untuk ${CONFIG.friendName}`} className="w-full h-full object-contain bg-gray-900" />
+                        
+                        {/* Pesan Hasil Foto (Pink Banner) - Sesuai permintaan */}
+                        <div className="absolute top-0 left-0 right-0 p-3 bg-pink-600 z-20 shadow-lg">
+                             <h2 className="text-white text-base font-medium text-center tracking-wide">
+                                Kirim Fotonya ke Najwan dan Dara YAA, Thank Us Later WKWKWK😏😋
+                            </h2>
+                        </div>
+                        
+                        <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-4 z-20 px-4">
+                          <button
+                            onClick={downloadPhoto}
+                            className="w-full max-w-md px-6 py-4 bg-pink-600 text-white rounded-full shadow-xl hover:bg-pink-700 transition flex items-center justify-center gap-3 text-lg font-semibold transform hover:scale-[1.02]"
+                          >
+                            <Download size={24} />
+                            Download Foto Selfie
+                          </button>
+                          <button
+                            onClick={openWhatsApp}
+                            className="w-full max-w-md px-6 py-4 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition flex items-center justify-center gap-3 text-lg font-semibold"
+                          >
+                            <Send size={24} />
+                            Kirim Pesan ke WhatsApp
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPhoto(null);
+                            }}
+                            className="px-6 py-3 text-white/70 hover:text-white transition text-sm"
+                          >
+                            Ulangi Foto
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {/* Hidden canvas used for final image capturing */}
+                  <canvas ref={captureCanvasRef} className="hidden" />
+                </div>
+              </div>
+              
+              {/* Modal Konfirmasi (Rendered global, aktif saat page 0 dan showModal true) */}
+              {showModal && page === 0 && (
+                  <PhotoConfirmationModal
+                      message="Ambil foto bareng hadiah nya"
+                      onConfirm={handleModalConfirm}
+                      onCancel={() => setShowModal(false)}
+                  />
+              )}
+            </div>
+          );
+        }
+
+        // Render aplikasi ke root DOM element
+        ReactDOM.createRoot(document.getElementById('root')).render(<BirthdayApp />);
+    </script>
+</body>
+</html>
