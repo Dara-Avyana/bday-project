@@ -1,313 +1,238 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Photobooth Selfie</title>
-    <!-- Load Google Fonts (Playfair Display for elegance) -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load React & Babel Standalone -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; 
-        }
-        #root {
-            width: 100vw;
-            height: 100vh;
-        }
-        .font-playfair {
-            font-family: 'Playfair Display', serif;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Photobooth Selfie</title>
+  <!-- Load Google Fonts (Playfair Display for elegance) -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+    rel="stylesheet">
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load React & Babel Standalone -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #root {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .font-playfair {
+      font-family: 'Playfair Display', serif;
+    }
+  </style>
 </head>
+
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useRef, useEffect } = React;
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
 
-        // ============================================
-        // Ikon Lucide In-line
-        // ============================================
+    // Ikon Lucide In-line
+    const IconWrapper = ({ children, className = "", size = 24 }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {children}
+      </svg>
+    );
 
-        const IconWrapper = ({ children, className = "", size = 24 }) => (
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width={size}
-                height={size}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={className}
-            >
-                {children}
-            </svg>
-        );
+    const Camera = (props) => (
+      <IconWrapper {...props}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></IconWrapper>
+    );
 
-        const Camera = (props) => (
-            <IconWrapper {...props}>
-                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                <circle cx="12" cy="13" r="3" />
-            </IconWrapper>
-        );
+    const Download = (props) => (
+      <IconWrapper {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></IconWrapper>
+    );
 
-        const Download = (props) => (
-            <IconWrapper {...props}>
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" x2="12" y1="15" y2="3" />
-            </IconWrapper>
-        );
+    const Send = (props) => (
+      <IconWrapper {...props}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></IconWrapper>
+    );
 
-        const Send = (props) => (
-            <IconWrapper {...props}>
-                <line x1="22" y1="2" x2="11" y2="13" />
-                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </IconWrapper>
-        );
+    const ChevronRight = (props) => (
+      <IconWrapper {...props}><path d="m9 18 6-6-6-6" /></IconWrapper>
+    );
 
-        const ChevronRight = (props) => (
-            <IconWrapper {...props}>
-                <path d="m9 18 6-6-6-6" />
-            </IconWrapper>
-        );
+    const CONFIG = {
+      PhotoboothMessage: "yeay! aku baru nyobain cara publish web gini, nanti di improve kok biar lebih keren. semoga harimu menyenangkan 🎉😊",
+      whatsappNumber: "6281252453308",
+    };
 
+    const PhotoConfirmationModal = ({ message, onConfirm, onCancel }) => (
+      <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
+        <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full text-center">
+          <h3 className="text-xl font-semibold mb-4 text-pink-600">{message}</h3>
+          <p className="text-gray-600 mb-6">TEKAN OK! Kalau gamau yaudah batalin ajadeh hmzhmz...</p>
+          <div className="flex justify-around gap-4">
+            <button onClick={onCancel} className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium">Batal</button>
+            <button onClick={onConfirm} className="flex-1 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition font-medium shadow-md">OK</button>
+          </div>
+        </div>
+      </div>
+    );
 
-        // ============================================
-        // KONFIGURASI - EDIT BAGIAN INI
-        // ============================================
-        const CONFIG = {
-          PhotoboothMessage: "Uyeay! Aku baru nyobain cara publish web gini, nanti di improve kok biar lebih keren. Semoga harimu menyenangkan 🎉😊", 
-          whatsappNumber: "6281252453308", 
-        };
-        // ============================================
+    function PhotoboothApp() {
+      const [page, setPage] = useState(-1);
+      const [userName, setUserName] = useState("");
+      const [photo, setPhoto] = useState(null);
+      const [stream, setStream] = useState(null);
+      const [facingMode, setFacingMode] = useState('user');
+      const [showModal, setShowModal] = useState(false);
+      const videoRef = useRef(null);
+      const captureCanvasRef = useRef(null);
+      const [confetti, setConfetti] = useState([]);
+      const [cameraError, setCameraError] = useState(null);
 
-        const PhotoConfirmationModal = ({ message, onConfirm, onCancel }) => (
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
-                <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full text-center">
-                    <h3 className="text-xl font-semibold mb-4 text-pink-600">
-                        {message}
-                    </h3>
-                    <p className="text-gray-600 mb-6">
-                        TEKAN OK! Kalau gamau yaudah batalin ajadeh hmzhmz... btw ini fotonya bakal landscape ya)
-                    </p>
-                    <div className="flex justify-around gap-4">
-                        <button 
-                            onClick={onCancel}
-                            className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium"
-                        >
-                            Batal
-                        </button>
-                        <button 
-                            onClick={onConfirm}
-                            className="flex-1 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition font-medium shadow-md"
-                        >
-                            OK
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-
-
-        function PhotoboothApp() {
-          const [page, setPage] = useState(-1); // Mulai dari -1 untuk halaman Input Nama
-          const [userName, setUserName] = useState(""); // State untuk menyimpan nama input
-          const [photo, setPhoto] = useState(null);
-          const [stream, setStream] = useState(null);
-          const [facingMode, setFacingMode] = useState('user');
-          const [showModal, setShowModal] = useState(false); 
-          
-          const videoRef = useRef(null);
-          const captureCanvasRef = useRef(null);
-          const [startX, setStartX] = useState(0);
-          const [confetti, setConfetti] = useState([]);
-          const [cameraError, setCameraError] = useState(null); 
-
-          useEffect(() => {
-            const pieces = [];
-            for (let i = 0; i < 50; i++) {
-              pieces.push({
-                id: i,
-                left: Math.random() * 100,
-                delay: Math.random() * 3,
-                duration: 3 + Math.random() * 2,
-                rotation: Math.random() * 360,
-                color: ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d96ff', '#ff6bff'][Math.floor(Math.random() * 5)]
-              });
-            }
-            setConfetti(pieces);
-          }, []);
-
-          const startCamera = async () => {
-            setCameraError(null);
-            try {
-              if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-              }
-              const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: { 
-                  facingMode: facingMode,
-                  width: { min: 640, ideal: 1920 },
-                  height: { min: 480, ideal: 1080 }
-                },
-                audio: false 
-              });
-              setStream(mediaStream);
-              if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream;
-              }
-            } catch (err) {
-              setCameraError("Akses kamera ditolak.");
-            }
-          };
-
-          const stopCamera = () => {
-            if (stream) {
-              stream.getTracks().forEach(track => track.stop());
-              setStream(null);
-            }
-          };
-
-          const takePhoto = () => {
-            const video = videoRef.current;
-            const canvas = captureCanvasRef.current;
-            if (!video || !canvas) return;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            if (facingMode === 'user') {
-                context.save();
-                context.scale(-1, 1);
-                context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-                context.restore();
-            } else {
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            }
-            setPhoto(canvas.toDataURL('image/png'));
-            stopCamera();
-          };
-
-          const switchCamera = () => {
-            setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
-            setPhoto(null); 
-          };
-
-          useEffect(() => {
-            if (page === 1 && !photo) {
-              startCamera();
-            }
-            return () => stopCamera();
-          }, [page, facingMode, photo]);
-
-          const downloadPhoto = () => {
-            const link = document.createElement('a');
-            link.download = `Photobooth-selfie-${userName || 'friend'}.png`;
-            link.href = photo;
-            link.click();
-          };
-
-          const openWhatsApp = () => {
-            const message = encodeURIComponent(`Hai! Aku ${userName}, ini foto selfie aku dari photobooth project entrance kamu! 🎉📸`);
-            window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${message}`, '_blank');
-          };
-
-          return (
-            <div className="w-full h-screen bg-black overflow-hidden relative font-sans">
-              <style>{`@keyframes fall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }`}</style>
-              
-              {confetti.map(piece => (
-                <div key={piece.id} className="absolute w-3 h-3 rounded-sm z-50 pointer-events-none"
-                  style={{ left: `${piece.left}%`, top: '-20px', backgroundColor: piece.color, animation: `fall ${piece.duration}s linear ${piece.delay}s infinite`, transform: `rotate(${piece.rotation}deg)` }}
-                />
-              ))}
-
-              <div className="flex transition-transform duration-500 w-[300vw] h-full"
-                style={{ transform: `translateX(-${(page + 1) * 33.33}%)` }}>
-                
-                {/* Halaman 0: Input Nama */}
-                <div className="w-screen h-full flex-shrink-0 flex flex-col items-center justify-center p-8 bg-pink-50">
-                   <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center border-t-8 border-pink-400">
-                      <h2 className="text-3xl font-playfair font-bold text-pink-600 mb-2">Siapa namamu?</h2>
-                      <p className="text-gray-500 mb-8 text-sm uppercase tracking-widest font-semibold">Photobooth Project Entrance</p>
-                      <input 
-                        type="text" 
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        placeholder="Ketik namamu di sini..."
-                        className="w-full px-6 py-4 border-2 border-pink-100 rounded-2xl focus:border-pink-400 outline-none text-center text-xl text-pink-600 mb-6 transition-all"
-                      />
-                      <button 
-                        disabled={!userName.trim()}
-                        onClick={() => setPage(0)}
-                        className={`w-full py-4 rounded-2xl font-bold text-lg transition-all shadow-lg ${userName.trim() ? 'bg-pink-500 text-white hover:bg-pink-600' : 'bg-gray-200 text-gray-400'}`}
-                      >
-                        Buka Hadiah ✨
-                      </button>
-                   </div>
-                </div>
-
-                {/* Halaman 1: Welcome (Dinamis dengan userName) */}
-                <div className="w-screen h-full flex-shrink-0 flex flex-col items-center justify-center p-8 relative bg-gray-900 text-center">
-                    <h1 className="text-5xl md:text-7xl font-playfair font-extrabold text-pink-400 mb-6 drop-shadow-lg">
-                      Halo, {userName}!
-                    </h1>
-                    <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed max-w-2xl font-light italic">
-                      "{CONFIG.PhotoboothMessage}"
-                    </p>
-                    <button onClick={() => setShowModal(true)} className="px-8 py-3 bg-pink-600 text-white rounded-full shadow-lg flex items-center gap-2 text-lg mx-auto transform hover:scale-105 transition">
-                        Mulai Selfie <ChevronRight size={20} />
-                    </button>
-                </div>
-
-                {/* Halaman 2: Camera */}
-                <div className="w-screen h-full flex-shrink-0 flex flex-col relative bg-gray-900">
-                  <div className="flex-1 relative w-full h-full">
-                    {!photo ? (
-                      <>
-                        {cameraError ? (
-                           <div className="flex items-center justify-center h-full text-red-400 p-8 text-center">{cameraError}</div>
-                        ) : (
-                          <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]" />
-                        )}
-                        <div className="absolute bottom-16 left-0 right-0 flex justify-center items-center gap-6 z-[100] px-4">
-                          <button onClick={switchCamera} className="px-5 py-3 bg-black/50 backdrop-blur-md text-white border border-white/20 rounded-full text-sm">Ganti</button>
-                          <button onClick={takePhoto} className="w-20 h-20 bg-white rounded-full border-[6px] border-pink-500/30 flex items-center justify-center"><div className="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center"><Camera size={32} className="text-white" /></div></button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="h-full flex flex-col">
-                        <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-3 px-4 z-50">
-                          <button onClick={downloadPhoto} className="w-full max-w-md py-4 bg-pink-600 text-white rounded-full shadow-xl flex items-center justify-center gap-2 font-bold"><Download size={20}/> Download Foto</button>
-                          <button onClick={openWhatsApp} className="w-full max-w-md py-4 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center gap-2 font-bold"><Send size={20}/> Kirim ke WA</button>
-                          <button onClick={() => setPhoto(null)} className="text-white/70 text-sm">Ulangi Foto</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <canvas ref={captureCanvasRef} className="hidden" />
-                </div>
-              </div>
-
-              {showModal && page === 0 && (
-                  <PhotoConfirmationModal message="Ambil foto bareng hadiahnya!" onConfirm={() => { setShowModal(false); setPage(1); }} onCancel={() => setShowModal(false)} />
-              )}
-            </div>
-          );
+      useEffect(() => {
+        const pieces = [];
+        for (let i = 0; i < 50; i++) {
+          pieces.push({
+            id: i,
+            left: Math.random() * 100,
+            delay: Math.random() * 3,
+            duration: 3 + Math.random() * 2,
+            rotation: Math.random() * 360,
+            color: ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d96ff', '#ff6bff'][Math.floor(Math.random() * 5)]
+          });
         }
+        setConfetti(pieces);
+      }, []);
 
-        // Render aplikasi ke root DOM element
-        ReactDOM.createRoot(document.getElementById('root')).render(<PhotoboothApp />);
-    </script>
+      const startCamera = async () => {
+        setCameraError(null);
+        try {
+          if (stream) stream.getTracks().forEach(track => track.stop());
+          const mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingMode, width: { min: 640, ideal: 1920 }, height: { min: 480, ideal: 1080 } },
+            audio: false
+          });
+          setStream(mediaStream);
+          if (videoRef.current) videoRef.current.srcObject = mediaStream;
+        } catch (err) { setCameraError("Akses kamera ditolak."); }
+      };
+
+      const stopCamera = () => {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          setStream(null);
+        }
+      };
+
+      const takePhoto = () => {
+        const video = videoRef.current;
+        const canvas = captureCanvasRef.current;
+        if (!video || !canvas) return;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        if (facingMode === 'user') {
+          context.save();
+          context.scale(-1, 1);
+          context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+          context.restore();
+        } else {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+        setPhoto(canvas.toDataURL('image/png'));
+        stopCamera();
+      };
+
+      const switchCamera = () => {
+        setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+        setPhoto(null);
+      };
+
+      useEffect(() => {
+        if (page === 1 && !photo) startCamera();
+        return () => stopCamera();
+      }, [page, facingMode, photo]);
+
+      const downloadPhoto = () => {
+        const link = document.createElement('a');
+        link.download = `Photobooth-selfie-${userName || 'friend'}.png`;
+        link.href = photo;
+        link.click();
+      };
+
+      const openWhatsApp = () => {
+        const message = encodeURIComponent(`Hai! Aku ${userName}, ini foto selfie aku dari photobooth project entrance kamu! 🎉📸`);
+        window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${message}`, '_blank');
+      };
+
+      return (
+        <div className="w-full h-screen bg-black overflow-hidden relative font-sans">
+          <style>{`@keyframes fall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }`}</style>
+          {confetti.map(piece => (
+            <div key={piece.id} className="absolute w-3 h-3 rounded-sm z-50 pointer-events-none" style={{ left: `${piece.left}%`, top: '-20px', backgroundColor: piece.color, animation: `fall ${piece.duration}s linear ${piece.delay}s infinite`, transform: `rotate(${piece.rotation}deg)` }} />
+          ))}
+
+          <div className="flex transition-transform duration-500 w-[300vw] h-full" style={{ transform: `translateX(-${(page + 1) * 33.33}%)` }}>
+            {/* Page 0: Input Nama */}
+            <div className="w-screen h-full flex-shrink-0 flex flex-col items-center justify-center p-8 bg-pink-50">
+              <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center border-t-8 border-pink-400">
+                <h2 className="text-3xl font-playfair font-bold text-pink-600 mb-2">Siapa namamu?</h2>
+                <p className="text-gray-500 mb-8 text-sm uppercase tracking-widest font-semibold">Photobooth Project Entrance</p>
+                <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Ketik namamu di sini..." className="w-full px-6 py-4 border-2 border-pink-100 rounded-2xl focus:border-pink-400 outline-none text-center text-xl text-pink-600 mb-6 transition-all" />
+                <button disabled={!userName.trim()} onClick={() => setPage(0)} className={`w-full py-4 rounded-2xl font-bold text-lg transition-all shadow-lg ${userName.trim() ? 'bg-pink-500 text-white hover:bg-pink-600' : 'bg-gray-200 text-gray-400'}`}>Let's Begin ✨</button>
+              </div>
+            </div>
+
+            {/* Page 1: Welcome */}
+            <div className="w-screen h-full flex-shrink-0 flex flex-col items-center justify-center p-8 relative bg-gray-900 text-center">
+              <h1 className="text-5xl md:text-7xl font-playfair font-extrabold text-pink-400 mb-6 drop-shadow-lg">Halo, {userName}!</h1>
+              <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed max-w-2xl font-light italic">"{CONFIG.PhotoboothMessage}"</p>
+              <button onClick={() => setShowModal(true)} className="px-8 py-3 bg-pink-600 text-white rounded-full shadow-lg flex items-center gap-2 text-lg mx-auto transform hover:scale-105 transition">Mulai Selfie <ChevronRight size={20} /></button>
+            </div>
+
+            {/* Page 2: Camera */}
+            <div className="w-screen h-full flex-shrink-0 flex flex-col relative bg-gray-900">
+              <div className="flex-1 relative w-full h-full overflow-hidden">
+                {!photo ? (
+                  <>
+                    {cameraError ? <div className="flex items-center justify-center h-full text-red-400 p-8 text-center">{cameraError}</div> : <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]" />}
+                    <div className="absolute bottom-16 left-0 right-0 flex justify-center items-center gap-6 z-[100] px-4">
+                      <button onClick={switchCamera} className="px-5 py-3 bg-black/50 backdrop-blur-md text-white border border-white/20 rounded-full text-sm font-medium active:scale-95 transition-transform">Ganti</button>
+                      <button onClick={takePhoto} className="w-20 h-20 bg-white rounded-full border-[6px] border-pink-500/30 flex items-center justify-center active:scale-90 transition-transform shadow-2xl">
+                        <div className="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center"><Camera size={32} className="text-white" /></div>
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="absolute inset-0 flex flex-col bg-black z-50">
+                    <div className="w-full p-3 bg-pink-600 shadow-lg z-[60]">
+                      <h2 className="text-white text-xs md:text-sm font-medium text-center leading-tight">KIRIM FOTONYA KE AKU YAA <br className="block md:hidden" /> WKWKWK😏😋</h2>
+                    </div>
+                    <div className="flex-1 relative flex items-center justify-center bg-gray-900 overflow-hidden">
+                      <img src={photo} className="max-w-full max-h-full object-contain" alt="Preview" />
+                    </div>
+                    <div className="w-full bg-black/80 backdrop-blur-md p-6 flex flex-col items-center gap-3 z-[60]">
+                      <button onClick={downloadPhoto} className="w-full max-w-md py-4 bg-pink-600 text-white rounded-full shadow-xl flex items-center justify-center gap-2 font-bold active:scale-95 transition-all"><Download size={20} /> Download Foto</button>
+                      <button onClick={openWhatsApp} className="w-full max-w-md py-4 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center gap-2 font-bold active:scale-95 transition-all"><Send size={20} /> Kirim ke WA</button>
+                      <button onClick={() => setPhoto(null)} className="py-2 text-white/60 hover:text-white text-sm font-medium underline underline-offset-4">Ulangi Foto</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <canvas ref={captureCanvasRef} className="hidden" />
+            </div>
+          </div>
+          {showModal && page === 0 && (
+            <PhotoConfirmationModal message="Ambil foto yang cakep!" onConfirm={() => { setShowModal(false); setPage(1); }} onCancel={() => setShowModal(false)} />
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<PhotoboothApp />);
+  </script>
 </body>
+
 </html>
