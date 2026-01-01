@@ -159,10 +159,11 @@
               }
               const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: { 
-                    facingMode,
-                    width: { ideal: 1080 },
-                    height: { ideal: 1080 },
-                }
+                  facingMode: facingMode, // 'user' untuk kamera depan
+                  width: { ideal: 720 },  // jangan terlalu besar agar ringan di HP
+                  height: { ideal: 1280 }
+                },
+                audio: false // pastikan audio false agar tidak minta izin mic
               });
               setStream(mediaStream);
               if (videoRef.current) {
